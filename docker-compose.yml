@@ -1,0 +1,25 @@
+version: '2'
+
+# Service section
+services:
+  hapcoll:
+    image: bcp/php_haproxy-collector:1.0b4
+    container_name: haproxy_collector
+    #entrypoint: "/bin/sleep 600" # For troubleshooting, entrypoint override
+    environment:
+      # HAProxy access/location configuration
+      - hapver=1.7
+      - hapuser=admin
+      - happass=xxxxxxx
+      - hapurl=https://[haproxy-server.domain.tld]/haproxy_stats;csv
+      - happort=2000
+      - self_signed=true # If certificate is self-signed.
+      - send_all=
+      # Debug configuration
+      - hapdebug=false
+      - hapstats=true
+      # APMIA target configuration
+      - apmia_url=http://[apmia-server.domain.tld]/apm/metricFeed
+      - apmia_port=8080
+      - poll_time=7
+    #restart: always
