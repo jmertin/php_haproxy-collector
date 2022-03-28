@@ -1,4 +1,4 @@
-# php_haproxy-collector 1.0-3 by J. Mertin -- joerg.mertin@broadcom.com
+# php_haproxy-collector 1.0-4 by J. Mertin -- joerg.mertin@broadcom.com
 Purpose: Collects haproxy csv stats and sends them to restfull enabled APMIA 
 
 # Description
