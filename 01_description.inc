@@ -6,69 +6,87 @@ into the APMIA.
 ### Requirements
 
 - The restfull interface of the APMIA needs to be enabled
+- HAProxy needs to provide the statistics
+- PHP needs to have posix, pcntl, curl installed (extensions)
 
+## APMIA configuration
 
-### APMIA details
+The detailed documentation for the APMIA can be found under
+https://techdocs.broadcom.com/us/en/ca-enterprise-software/it-operations-management/application-performance-management/10-7/implementing-agents/infrastructure-agent/epagent-plug-ins/configure-epagent-network-ports/enable-the-epagent-plug-ins-restful-interface.html
 
-The detailed documentation for the APMIA can be found under https://techdocs.broadcom.com/us/en/ca-enterprise-software/it-operations-management/application-performance-management/10-7/implementing-agents/infrastructure-agent/epagent-plug-ins/configure-epagent-network-ports/enable-the-epagent-plug-ins-restful-interface.html
+#### Enable the REST interface to your Infrastructure Agent.
 
-Available Metric types in APMIA are
-
-#### PerIntervalCounter
-The value is a rate per interval. The metrics are aggregated over time by adding up the values. The sum of values is kept by a counter. At the end of the 15-second interval, the value of the counter is reported. After that, the counter is reset to zero.
-Use this data type whenever you report on the rate at which something is occurring. For example, the rate of errors per interval.
-
-#### IntCounter/LongCounter
- Reports the integer or long value that is sent to the metric. This attribute keeps reporting the same value over every subsequent 15-second interval, until a new value is supplied.
-This data type can be useful in the context of reporting queue depth, threads available, or similar gauge-like, tally metrics.
-
-#### IntAverage/LongAverage
-This attribute calculates and reports the averages (integer or long) for the timings you supply to the metric. As the IntAverage/LongAverage receives your measurements, it keeps a running count and a running average of your results. At the end of each 15-second interval, the attribute reports information about measurements. IntAverage/LongAverage reports the count of measurements, the mean of all measurements, the fastest measurement, and the slowest measurement.
-Use this data type to calculate response times, like “average latency time in milliseconds”.
-
-#### IntRate
-The value is a per-second integer rate. IntRate divides one or more values you supply by 15. This attribute assumes a per second
-rate when looking at live data. For a 15-second interval, the remainder (14 or fewer) are truncated. When aggregated over multiple time periods, the weighted average is used as the aggregated value.
-Use this data type in the context of queries per second
-, for example.
-
-#### StringEvent
-Reports string values, like a process ID or a startup command line. This metric data type introduces a considerable overhead in terms of memory and bandwidth, so use it sparingly. Reporting log entries as string events is not recommended.
-
-#### Timestamp
-This data type generates successively increasing timestamps. The value is the number of milliseconds that have elapsed because January 1, 1970 00:00:00 UTC (UNIX Epoch Time).
-Reporting timestamps is unnecessary, because the performance metrics are all automatically timestamped when the Enterprise Manager receives them.
-
-Example:
+- Navigate to the <Agent_Home>/core/config directory and open the IntroscopeAgent.profile in a text editor.   
+Look for:
 ```
-{ metrics : [{type : "PerIntervalCounter", name : "MyTest|RESTFul|PerIntervalCounter|Test1:Count", value : "123"}] }
-{ metrics : [{type : "LongCounter", name : "MyTest|RESTFul|LongCounter|Test2:Count", value : "456"}] }
+introscope.epagent.config.httpServerPort=8080
+```
+and set the port to whatever port is available for polling.
+
+
+### HAProxy
+
+Docs are located here:   
+- http://cbonte.github.io/haproxy-dconv/1.7/management.html#9.1
+- http://cbonte.github.io/haproxy-dconv/1.5/snapshot/configuration.html#9.1
+
+Note currently only haproxy 1.5 and 1.7 are supported.
+Though new versions can be added easily.
+
+### Configuration variables
+
+The following variables need to be defined:
+
+- hapver: default "1.7" - defines which haproxy the system will poll/
+
+- hapurl: Format "https://haproxy-url.domain.tld/haproxy_stats;csv" - No default.
+Note the ";csv" at the end is required. Also, do _not_ add the port   
+for the stats-UI into the URL!
+
+- hapuser: default "admin" - The user that is used to authenticate to access the statistics
+
+- happass: No default. The associated password to hapuser!
+
+- happort: default "2000" - the port to access the haproxy statistics.
+
+- self_signed: default "false" - If the certificate to access the haproxy interface is self signed, set this variable to "true".
+
+- send_all: default "false" - By default the collector will only send metrics that have values associated. If the value fields are empty, the metric will be skipped.
+
+- apmia_url: No default - "http://apmia-url.domain.tld/apm/metricFeed" the url used to access the APMIA restful collector.
+
+- apmia_port: default 8080 - The port the restful collector is listening.
+
+- poll_time: 7 - The interval between sending the stats. Note that the counter will start once all the data was sent.
+
+- hapdebug: default "false" - Set to true for activating debugging
+
+- hapstats: default "false" - Set to true for activating stats in console
+
+## Running the CLI Version only
+
+The CLI version can be run from any location.
+Just edit the run.sh script, provide the correct values, and execute it.
+```
+php_haproxy_collector$ ./run.sh 
+
+*** HAProxy stats to APMIA RESTFul collector started
+ => The following configuration is set (conf/hacollector.conf)
+ =============================================================
+ => HA Proxy version: 1.7 
+    - haproxy URL: https://pcm.solsys.org/haproxy_stats;csv 
+    - haproxy port: 2000 
+    - haproxy access via user: admin 
+ => APMIA configuration
+    - APMIA target URL: http://calypso.solsys.org/apm/metricFeed 
+    - APMIA Port: 8080 
+    - Poll time: 7 
+ => Executing! 
+    - Debug flag:  
+    - Statistics flag:  
+ => Lockfile hacollector.php.39a80fac..LCK created.
 ```
 
-#### APMia Rest API requires data to come in the following format
-
-   {"type" : "<a supported metric type>",
-   "name"  : "<a unique metric name (including path but excluding host|process|agent)>",
-   "value" : "<the metric value>"}
-
- {"host"    : "<agent hostname>",     (Optional.  If set, it must match that in IntroscopeAgent.properties)
-  "process" : "<agent process name>", (Optional.  If set, it must match that in IntroscopeAgent.properties)
-  "agent"   : "<agent name>",         (Optional.  If set, it must match that in IntroscopeAgent.properties)
-  "metrics" : [{"type" : "<type>", "name" : "<name>", "value" : "<value>"},
-               {"type" : "<type>", "name" : "<name>", "value" : "<value>"},
-               {"type" : "<type>", "name" : "<name>", "value" : "<value>"}
+## Running the docker-version
 
 
- {"host"    : "<agent hostname>",     (Optional.  If set, it must match that in IntroscopeAgent.properties)
-  "process" : "<agent process name>", (Optional.  If set, it must match that in IntroscopeAgent.properties)
-  "agent"   : "<agent name>",         (Optional.  If set, it must match that in IntroscopeAgent.properties)
-  "metrics" : [{"type" : "<type>", "name" : "<name>", "value" : "<value>"},
-               {"type" : "<type>", "name" : "<name>", "value" : "<value>"},
-               {"type" : "<type>", "name" : "<name>", "value" : "<value>"}
-
-
-
-### HAProxy docs are located here:
-http://cbonte.github.io/haproxy-dconv/1.7/management.html#9.1
-
- */
