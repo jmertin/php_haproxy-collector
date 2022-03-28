@@ -11,24 +11,24 @@ into the APMIA.
 
 ## APMIA configuration
 
-The detailed documentation for the APMIA can be found under
-https://techdocs.broadcom.com/us/en/ca-enterprise-software/it-operations-management/application-performance-management/10-7/implementing-agents/infrastructure-agent/epagent-plug-ins/configure-epagent-network-ports/enable-the-epagent-plug-ins-restful-interface.html
+The detailed documentation for the APMIA can be found under 
+[Enable the EPAgent Plug-ins RESTful Interface](https://techdocs.broadcom.com/us/en/ca-enterprise-software/it-operations-management/application-performance-management/10-7/implementing-agents/infrastructure-agent/epagent-plug-ins/configure-epagent-network-ports/enable-the-epagent-plug-ins-restful-interface.html)
 
-#### Enable the REST interface to your Infrastructure Agent.
+#### Enable the REST interface on your Infrastructure Agent.
 
-- Navigate to the <Agent_Home>/core/config directory and open the IntroscopeAgent.profile in a text editor.   
+- Navigate to the [Agent_Home]/core/config directory and open the IntroscopeAgent.profile in a text editor.   
 Look for:
 ```
 introscope.epagent.config.httpServerPort=8080
 ```
-and set the port to whatever port is available for polling.
+and set the port to whatever port is available. The collector will send the received metrics to this port.
 
 
 ### HAProxy
 
 Docs are located here:   
-- http://cbonte.github.io/haproxy-dconv/1.7/management.html#9.1
-- http://cbonte.github.io/haproxy-dconv/1.5/snapshot/configuration.html#9.1
+- [Management Guide 1.7](http://cbonte.github.io/haproxy-dconv/1.7/management.html#9.1)   
+- [Management Guide 1.5](http://cbonte.github.io/haproxy-dconv/1.5/snapshot/configuration.html#9.1)   
 
 Note currently only haproxy 1.5 and 1.7 are supported.   
 Though new versions can be added easily through adapting the existing
@@ -89,11 +89,11 @@ php_haproxy_collector$ ./run.sh
  => The following configuration is set (conf/hacollector.conf)
  =============================================================
  => HA Proxy version: 1.7 
-    - haproxy URL: https://pcm.solsys.org/haproxy_stats;csv 
+    - haproxy URL: https://haproxy-server.domain.tld/haproxy_stats;csv 
     - haproxy port: 2000 
     - haproxy access via user: admin 
  => APMIA configuration
-    - APMIA target URL: http://calypso.solsys.org/apm/metricFeed 
+    - APMIA target URL: http://apmia-server.domain.tld/apm/metricFeed 
     - APMIA Port: 8080 
     - Poll time: 7 
  => Executing! 
@@ -119,11 +119,11 @@ haproxy_collector | *** HAProxy stats to APMIA RESTFul collector started
 haproxy_collector |  => The following configuration is set (conf/hacollector.conf)
 haproxy_collector |  =============================================================
 haproxy_collector |  => HA Proxy version: 1.7 
-haproxy_collector |     - haproxy URL: https://pcm.solsys.org/haproxy_stats;csv 
+haproxy_collector |     - haproxy URL: https://haproxy-server.domain.tld/haproxy_stats;csv 
 haproxy_collector |     - haproxy port: 2000 
 haproxy_collector |     - haproxy access via user: admin 
 haproxy_collector |  => APMIA configuration
-haproxy_collector |     - APMIA target URL: http://calypso.solsys.org/apm/metricFeed 
+haproxy_collector |     - APMIA target URL: http://apmia-server.domain.tld/apm/metricFeed 
 haproxy_collector |     - APMIA Port: 8080 
 haproxy_collector |     - Poll time: 7 
 haproxy_collector |  => Executing! 
