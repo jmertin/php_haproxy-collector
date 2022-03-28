@@ -34,8 +34,23 @@ Docs are located here:
 - http://cbonte.github.io/haproxy-dconv/1.7/management.html#9.1
 - http://cbonte.github.io/haproxy-dconv/1.5/snapshot/configuration.html#9.1
 
-Note currently only haproxy 1.5 and 1.7 are supported.
-Though new versions can be added easily.
+Note currently only haproxy 1.5 and 1.7 are supported.   
+Though new versions can be added easily through adapting the existing
+conf/haproxy_1.7.inc file for example.
+
+Configure the haproxy to provide server statistics.
+An example configuration could look like below:
+```
+# Statistics
+listen stats
+    bind *:2000 ssl crt /etc/ssl/haproxy.pem
+    mode http
+    stats enable
+    stats hide-version
+    stats realm HAproxy-Statistics
+    stats uri /haproxy_stats
+    stats auth admin:XXXXXX
+```
 
 ### Configuration variables
 
@@ -92,6 +107,34 @@ php_haproxy_collector$ ./run.sh
 ```
 
 ## Running the docker-version
+
+The docker version can be run as simple as the console version.
+
+Fill the variables accordingly in the docker-compose.yml template and
+start the container with:
+```
+jmertin@calypso:~/docker/php_haproxy_collector$ docker-compose up -d
+Creating network "php_haproxy_collector_default" with the default driver
+Creating haproxy_collector ... done
+jmertin@calypso:~/docker/php_haproxy_collector$ docker-compose logs
+Attaching to haproxy_collector
+haproxy_collector | 
+haproxy_collector | *** HAProxy stats to APMIA RESTFul collector started
+haproxy_collector |  => The following configuration is set (conf/hacollector.conf)
+haproxy_collector |  =============================================================
+haproxy_collector |  => HA Proxy version: 1.7 
+haproxy_collector |     - haproxy URL: https://pcm.solsys.org/haproxy_stats;csv 
+haproxy_collector |     - haproxy port: 2000 
+haproxy_collector |     - haproxy access via user: admin 
+haproxy_collector |  => APMIA configuration
+haproxy_collector |     - APMIA target URL: http://calypso.solsys.org/apm/metricFeed 
+haproxy_collector |     - APMIA Port: 8080 
+haproxy_collector |     - Poll time: 7 
+haproxy_collector |  => Executing! 
+haproxy_collector |     - Debug flag:  
+haproxy_collector |     - Statistics flag: 1 
+haproxy_collector |  => Lockfile /opt/hapcoll/hacollector.php.39a80fac..LCK created.
+```
 
 
 
