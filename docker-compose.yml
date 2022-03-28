@@ -3,7 +3,7 @@ version: '2'
 # Service section
 services:
   hapcoll:
-    image: bcp/php_haproxy-collector:1.0b4
+    image: bcp/php_haproxy-collector:latest
     container_name: haproxy_collector
     #entrypoint: "/bin/sleep 600" # For troubleshooting, entrypoint override
     environment:
