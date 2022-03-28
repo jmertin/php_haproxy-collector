@@ -149,11 +149,11 @@ function poller() {
 
     $DEBUG && print " 3 => Return Associative array : \n" . print_r($assoc_data);
 
-    // Cycle through associative array
+    // #1 Cycle through associative array
     foreach ($assoc_data as &$output) {
         $coma = "";
         $line = "";
-        // Extract key/values out of master array
+        // #2 Extract key/values out of master array
         foreach ($output as $key => $value) {
 
             // Sanitize data somehow
@@ -195,10 +195,8 @@ function poller() {
         $STATS && print " > Polled: " . gmstrftime("%Y-%m-%d %T %Z") . " {$output['pxname']}|{$output['svname']} Agent answer: $result \n";
         // print "\n\n $tosend\n\n"; // Payload in case
         curl_close($xch);
-    }
-
-    //curl_close($xch);
-}
+    } // foreach loop #2
+}// Foreach loop #1
 
 // Actual code runs here :)
 while (true) {
