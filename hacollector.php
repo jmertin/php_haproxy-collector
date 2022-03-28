@@ -37,32 +37,56 @@ if (strlen($username) > 0) {
   print " * Anmonymous access to HA Proxy csv stats \n";
 }
 print " * APMIA target URL: $apmia_url \n";
-print " * APMIA Port: $apmia_port \n";
+print "   - APMIA Port: $apmia_port \n";
 print " * Poll time: $poll_time \n";
-print " > Executing - Lockfile $filename created.\n";
+print " > Executing! \n";
+print "   - Debug flag: $DEBUG \n";
+print "   - Statistics flag: $STATS \n";
+print " > Lockfile $filename created.\n";
 
 // Load the haproxy version file - configuration for what to poll and type definitions.
 include_once("./conf/haproxy_" . $haproxy_version . ".inc"); // will load haproxy file
 
+// tick use required
+declare(ticks = 1);
 
-// Show env Variables
-if ($DEBUG) {
+// signal handler function
+function sig_handler($signo) {
+    global $filename;
 
-  print "Current configuration \n";
-  print "DEBUG Flag: $DEBUG \n";
-  print "HAProxy version: $haproxy_version \n";
-  print "HAProxy port: $haproxy_port \n";
-  print "User Name: $username \n";
-  print "Password : $password \n";
-}
+     switch ($signo) {
+         case SIGTERM:
+             print "Received $signo - cleaning up!\n";
+             // handle shutdown tasks
+             if (file_exists($filename)) {
+                 unlink($filename);
+             }
+             exit;
+             break;
+         case SIGINT:
+             print "Received $signo - cleaning up!\n";
+             // handle restart tasks
+             if (file_exists($filename)) {
+                 unlink($filename);
+             }
+             exit;
+             break;
+         default:
+             // handle all other signals
+             print "Received $signo - don't know what to do!";
+     }
 
+} // function sig_handler
+
+// Actual function, doing the HAProxy polling etc.
 function poller() {
-  global $haproxy_version, $haproxy_port, $DEBUG, $username, $password, $csvurl, $self_signed, $apmia_url, $apmia_port, $poll_time, $apmia_send, $apmia_des, $apmia_type, $send_all;
-  /*first log in*/
+    global $haproxy_version, $haproxy_port, $DEBUG, $username, $password, $csvurl, $self_signed, $apmia_url, $apmia_port, $poll_time, $apmia_send, $apmia_des, $apmia_type, $send_all, $STATS;
+
+    // Init ch
   $ch = curl_init($csvurl);
 
   // If curl debugging is required, uncomment the following line.
-  // curl_setopt($ch, CURLOPT_VERBOSE, $DEBUG);
+  curl_setopt($ch, CURLOPT_VERBOSE, $DEBUG);
 
   // In case HAProxy runs on its own port, set the port here.
   curl_setopt($ch, CURLOPT_PORT , $haproxy_port);
@@ -149,9 +173,9 @@ function poller() {
             if ($apmia_send["{$key}"]) {
               // Key will be used to extract the values out of the apmia_des array
               $line .=  $coma . "{\"type\" : \"" .
-                $apmia_des["{$key}"] . "\", \"name\" : \"" .
+                $apmia_des["{$key}"] . "\", \"name\" : \"haproxy|" .
                 $output['pxname'] . "|" .
-                $output['svname'] . ":" .
+                $output['svname'] .
                 $apmia_type["{$key}"] . "\", \"value\" : \"" .
                 $value . "\"}";
               $coma=",";
@@ -176,7 +200,7 @@ function poller() {
           throw new Exception(curl_error($xch));
       }
       $DEBUG && print "$result \n";
-      print " > Polled: " . gmstrftime("%Y-%m-%d %T %Z") . " {$output['pxname']}|{$output['svname']} Agent answer: $result \n";
+      $STATS && print " > Polled: " . gmstrftime("%Y-%m-%d %T %Z") . " {$output['pxname']}|{$output['svname']} Agent answer: $result \n";
       // print "\n\n $tosend\n\n"; // Payload in case
       curl_close($xch);
   }
@@ -184,11 +208,18 @@ function poller() {
   //curl_close($xch);
 }
 
+// setup signal handlers
+//pcntl_signal(SIGTERM, "sig_handler");
+//pcntl_signal(SIGINT,  "sig_handler");
+
 while (true) {
   // Actually run the code
   poller();
+    // setup signal handlers - or else we cannot interrupt.
+    pcntl_signal(SIGTERM, "sig_handler");
+    pcntl_signal(SIGINT,  "sig_handler");
+    // Pause for the requested amount of time
     sleep($poll_time);
-
 }
 
 
