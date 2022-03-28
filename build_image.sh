@@ -41,7 +41,7 @@ if [ "$Build" = "y" ]
        echo "*** Tagging image to bcp/$FileBase:$BUILDVER" 
        docker tag bcp/$FileBase:latest bcp/$FileBase:$BUILDVER
 
-       if [ -n DOCKER_REGISTRY ]
+       if [ -n "$DOCKER_REGISTRY" ]
        then
 	   echo "*** Tagging image to ${DOCKER_REGISTRY}/bcp/$FileBase:$PHPMONITVER" 
 	   docker tag bcp/$FileBase:latest ${DOCKER_REGISTRY}/bcp/$FileBase:$BUILDVER
