@@ -5,13 +5,22 @@ Purpose: Collects haproxy csv stats and sends them to restfull enabled APMIA
 ## Introduction
 
 this package provides the possibility to import haproxy statistics
-into the APMIA.
+into the APMIA.  The script can be used on a per haproxy server.
+The idea to write the HAProxy collector was to reduce the resource
+footprint so it can be ran on any system.   
+Note that the memory requirement will depend on the HAProxy server
+provided statistics - as these will be worked out in memory itself.
+For example, polling a small HAProxy servicing 2 sites will require
+around 14MBytes of real memory (measured using smem/PSS value).
+
+
+
 
 ### Requirements
 
 - The restfull interface of the APMIA needs to be enabled
 - HAProxy needs to provide the statistics
-- PHP needs to have posix, pcntl, curl installed (extensions)
+- PHP 7.4 needs to have posix, pcntl, curl installed (extensions)
 
 ## APMIA configuration
 
@@ -110,6 +119,10 @@ php_haproxy_collector$ ./run.sh
 
 The docker version can be run as simple as the console version.
 
+The provided image is based on alpine to keep the storage footprint
+small. Also, for security reasons, the entire process runs as user
+hapcoll that is created during image build.
+
 Fill the variables accordingly in the docker-compose.yml template and
 start the container with:
 ```
@@ -134,10 +147,90 @@ haproxy_collector |  => Executing!
 haproxy_collector |     - Debug flag:  
 haproxy_collector |     - Statistics flag: 1 
 haproxy_collector |  => Lockfile /opt/hapcoll/hacollector.php.39a80fac..LCK created.
+ > Polled: 2022-03-29 09:13:17 GMT http-in|FRONTEND Agent answer: {"validCount":37} 
+ > Polled: 2022-03-29 09:13:17 GMT pcm_frontend|FRONTEND Agent answer: {"validCount":37} 
+ > Polled: 2022-03-29 09:13:17 GMT pcm_backend|pcm Agent answer: {"validCount":48} 
+ > Polled: 2022-03-29 09:13:17 GMT pcm_backend|BACKEND Agent answer: {"validCount":47} 
+ > Polled: 2022-03-29 09:13:17 GMT phpmyadmin_frontend|FRONTEND Agent answer: {"validCount":37} 
+ > Polled: 2022-03-29 09:13:17 GMT phpmyadmin_backend|phpmyadmin Agent answer: {"validCount":48} 
+ > Polled: 2022-03-29 09:13:17 GMT phpmyadmin_backend|BACKEND Agent answer: {"validCount":47} 
+ > Polled: 2022-03-29 09:13:17 GMT stats|FRONTEND Agent answer: {"validCount":37} 
+ > Polled: 2022-03-29 09:13:17 GMT stats|BACKEND Agent answer: {"validCount":46} 
 ```
 
+### Caveats
+
+The docker image does not need any ports to be opened, as all
+connections are done from within. This means the collector script will
+connect to the configured HAPRoxy server, and to the APMIA Restful
+agent to push the metrics.   
+The APMIA Restful agent however will listen only to localhost IP range 127.0.x.x.
+This means that when running haproxy_collector in docker, the APMIA
+needs to run on docker as well and be linked to the haproxy_collector
+or else it will not listend to the right interfaces.
 
 
+### Building the docker image
+
+This git-package provides a complete build-set so you can create your
+own docker-image. Simply execute the ./build_image.sh script.
+
+If the "DOCKER_REGISTRY" variable is holding a valid docker
+repository, it will also automatically push the created image to the
+docker repository. Make sure you adapt the docker-compose script so
+that it polls the image from that repository!
+
+```
+jmertin@calypso:~/docker/php_haproxy_collector$ ./build_image.sh 
+
+>>> Build php_haproxy-collector image [y/n]?: y
+
+*** If you want to apply OS Update, don't use the cache.
+>>> Use cache for build [y/n]?: y
+Sending build context to Docker daemon  387.1kB
+Step 1/12 : FROM php:7.4-fpm-alpine
+ ---> db81efe17f88
+Step 2/12 : MAINTAINER Joerg Mertin <joerg.mertin@broadcom.com>
+ ---> Using cache
+ ---> a79dea8a1642
+Step 3/12 : RUN adduser -h /opt/hapcoll -s /sbin/nologin -g "HAProxy collector" -D hapcoll
+ ---> Using cache
+ ---> 416e5b574807
+Step 4/12 : RUN apk upgrade --no-cache && docker-php-ext-install pcntl
+ ---> Using cache
+ ---> 48c0e0cef4aa
+Step 5/12 : RUN mkdir /opt/hapcoll/conf
+ ---> Using cache
+ ---> 4393d9fa494c
+Step 6/12 : COPY conf/* /opt/hapcoll/conf/
+ ---> b24706db2c60
+Step 7/12 : COPY hacollector.php /opt/hapcoll/hacollector.php
+ ---> 697b40c70785
+Step 8/12 : COPY run.sh /opt/hapcoll/run.sh
+ ---> 1502dcead9c4
+Step 9/12 : RUN chown hapcoll.hapcoll -R /opt/hapcoll
+ ---> Running in 927ae2bbd4bf
+Removing intermediate container 927ae2bbd4bf
+ ---> 16ae9c6aa0c4
+Step 10/12 : USER hapcoll
+ ---> Running in a16876402280
+Removing intermediate container a16876402280
+ ---> ff074cff460f
+Step 11/12 : WORKDIR /opt/hapcoll
+ ---> Running in 1d3ecad5c031
+Removing intermediate container 1d3ecad5c031
+ ---> 024f7c8ebeea
+Step 12/12 : CMD [ "php", "/opt/hapcoll/hacollector.php" ]
+ ---> Running in f2fc80deac8a
+Removing intermediate container f2fc80deac8a
+ ---> 3a6e28fbb0f7
+Successfully built 3a6e28fbb0f7
+Successfully tagged bcp/php_haproxy-collector:latest
+*** Tagging image to bcp/php_haproxy-collector:1.0b5
+jmertin@calypso:~/docker/php_haproxy_collector$ docker images | grep "bcp/php_haproxy-collector"
+bcp/php_haproxy-collector                                     1.0b5                                   3a6e28fbb0f7   17 seconds ago   67MB
+bcp/php_haproxy-collector                                     latest                                  3a6e28fbb0f7   17 seconds ago   67MB
+```
 
 # Manual Changelog
 ```
