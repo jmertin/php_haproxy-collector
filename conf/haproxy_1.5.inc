@@ -91,12 +91,12 @@ $apmia_des = array("pxname =" => "StringEvent",
                    "wredis" => "IntCounter", // number of times a request was redispatched to another server
                    "status" => "StringEvent", // status (UP/DOWN/NOLB/MAINT/MAINT(via)/MAINT(resolution)...)
                    "weight" => "IntCounter", // total weight (backend), server weight (server)
-                   "act" => "StringEvent", // number of active servers (backend), server is active (server)
+                   "act" => "IntCounter", // number of active servers (backend), server is active (server)
                    "bck" => "IntCounter", // number of backup servers (backend), server is backup (server)
                    "chkfail" => "IntCounter", // number of failed checks. (Only counts checks failed when the server is up.)
                    "chkdown" => "IntCounter", // number of UP->DOWN transitions.
-                   "lastchg" => "StringEvent", // number of seconds since the last UP<->DOWN transition
-                   "downtime" => "StringEvent", // total downtime (in seconds).
+                   "lastchg" => "IntCounter", // number of seconds since the last UP<->DOWN transition
+                   "downtime" => "IntCounter", // total downtime (in seconds).
                    "qlimit" => "StringEvent", // configured maxqueue for the server, or nothing in the value is 0
                    "pid" => "StringEvent", // process id (0 for first instance, 1 for second, ...)
                    "iid" => "StringEvent", // unique proxy id
@@ -107,7 +107,7 @@ $apmia_des = array("pxname =" => "StringEvent",
                    "type" => "IntCounter", // (0=frontend, 1=backend, 2=server, 3=socket/listener)
                    "rate" => "IntRate", // number of sessions per second over last elapsed second
                    "rate_lim" => "StringEvent", // configured limit on new sessions per second
-                   "rate_max" => "StringEvent", // max number of new sessions per second
+                   "rate_max" => "IntRate", // max number of new sessions per second
                    "check_status" => "StringEvent", // status of last health check
                    "check_code" => "StringEvent", // layer5-7 code, if available
                    "check_duration" => "IntCounter", // time in ms took to finish last health check
@@ -181,7 +181,7 @@ $apmia_type = array("pxname =" => "String",
                    "hrsp_3xx" => "|Responses:http responses with 3xx cod", // http responses with 3xx code
                    "hrsp_4xx" => "|Responses:http responses with 4xx code", // http responses with 4xx code
                    "hrsp_5xx" => "|Responses:http responses with 5xx code", // http responses with 5xx code
-                   "hrsp_other" => "|Responses:Protocol errors", // http responses with other codes (protocol error)
+                   "hrsp_other" => "|Errors:Protocol errors", // http responses with other codes (protocol error)
                    "hanafail" => "|Server:Failed health check", // failed health checks details
                    "req_rate" => "|Requests:HTTP req. per last second", // HTTP requests per second over last elapsed second
                    "req_rate_max" => "|Requests:Max HTTP req per sec. seen", // max number of HTTP requests per second observed
