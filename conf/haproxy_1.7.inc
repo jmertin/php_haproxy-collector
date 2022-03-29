@@ -223,7 +223,7 @@ $apmia_type = array("pxname =" => "String",
                    "hrsp_3xx" => "|Responses:http responses with 3xx cod", // http responses with 3xx code
                    "hrsp_4xx" => "|Responses:http responses with 4xx code", // http responses with 4xx code
                    "hrsp_5xx" => "|Responses:http responses with 5xx code", // http responses with 5xx code
-                   "hrsp_other" => "|Responses:Protocol errors", // http responses with other codes (protocol error)
+                   "hrsp_other" => "|Errors:Protocol errors", // http responses with other codes (protocol error)
                    "hanafail" => "|Server:Failed health check", // failed health checks details
                    "req_rate" => "|Requests:HTTP req. per last second", // HTTP requests per second over last elapsed second
                    "req_rate_max" => "|Requests:Max HTTP req per sec. seen", // max number of HTTP requests per second observed
@@ -244,8 +244,8 @@ $apmia_type = array("pxname =" => "String",
                    "agent_status" => "|Agent:Agent status", // status of last agent check
                    "agent_code" => "|Agent:String", // numeric code reported by agent if any (unused for now)
                    "agent_duration" => "|Agent:Agent check time (ms)", // time in ms taken to finish last check
-                   "check_desc" => "|Agent:Agent check status", // short human-readable description of check_status
-                   "agent_desc" => "|Agent:Agent description", // short human-readable description of agent_status
+                   "check_desc" => ":Agent check status", // short human-readable description of check_status
+                   "agent_desc" => ":Agent description", // short human-readable description of agent_status
                    "check_rise" => "|Server:Server rise params", // server's "rise" parameter used by checks
                    "check_fall" => "|Server:Server fall params", // server's "fall" parameter used by checks
                    "check_health" => "|Server:Server health value", // server's health check value between 0 and rise+fall-1
@@ -254,8 +254,8 @@ $apmia_type = array("pxname =" => "String",
                    "agent_health" => "|Agent:Agent health param", // agent's health parameter, between 0 and rise+fall-1
                    "addr" => "|Generic:Address", // address:port or "unix". IPv6 has brackets around the address.
                    "cookie" => "|Generoc:Server cookie", // server's cookie value or backend's cookie name
-                   "mode" => "|Generic:Proxy mode", // proxy mode (tcp, http, health, unknown)
-                   "algo" => "|Generic:LB algorithm", // load balancing algorithm
+                   "mode" => ":Proxy mode", // proxy mode (tcp, http, health, unknown)
+                   "algo" => ":LB algorithm", // load balancing algorithm
                    "conn_rate" => "|Generic:Nr connections per sec.", // number of connections over the last elapsed second
                    "conn_rate_max" => "|Generic:Highest connection rate", // highest known conn_rate
                    "conn_tot" => "|Generic:Total connections", // cumulative number of connections
