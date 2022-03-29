@@ -11,8 +11,10 @@ fi
 # Create build version
 BUILDVER=${RELEASE}b${BUILD}
 
-echo -n "Removing dangling docker images"
-docker rmi $(docker images -f "dangling=true" -q)
+# Used to remove non needed docker images/system cleanup.
+# Do no enable in production!
+#echo -n "Removing dangling docker images"
+#docker rmi $(docker images -f "dangling=true" -q)
 
 
 echo
