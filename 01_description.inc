@@ -61,11 +61,10 @@ listen stats
 
 The following variables need to be defined:
 
-- hapver: default "1.7" - defines which haproxy the system will poll/
+- hapver: default "1.7" - defines which haproxy version the system will poll. This defines the metrics to collect.
 
 - hapurl: Format "https://haproxy-url.domain.tld/haproxy_stats;csv" - No default.
-Note the ";csv" at the end is required. Also, do _not_ add the port   
-for the stats-UI into the URL!
+Note the ";csv" at the end is required. Also, do **not** add the port for the stats-UI into the URL!
 
 - hapuser: default "admin" - The user that is used to authenticate to access the statistics
 
@@ -81,7 +80,7 @@ for the stats-UI into the URL!
 
 - apmia_port: default 8080 - The port the restful collector is listening.
 
-- poll_time: 7 - The interval between sending the stats. Note that the counter will start once all the data was sent.
+- poll_time: 7 - The interval between sending the stats. Note that the counter will start once all the data was sent so take into account long poll-times on larg hapreoxy deployments!
 
 - hapdebug: default "false" - Set to true for activating debugging
 
@@ -159,7 +158,7 @@ haproxy_collector |  => Lockfile /opt/hapcoll/hacollector.php.39a80fac..LCK crea
 The docker image does not need any ports to be opened, as all
 connections are done from within. This means the collector script will
 connect to the configured HAPRoxy server, and to the APMIA Restful
-agent to push the metrics.   
+agent to push the metrics.  
 The APMIA Restful agent however will listen only to localhost IP range 127.0.x.x.
 This means that when running haproxy_collector in docker, the APMIA
 needs to run on docker as well and be linked to the haproxy_collector
