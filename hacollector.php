@@ -6,7 +6,7 @@
 */
 
 // Load configuration
-include_once('./conf/hacollector.conf'); // will load the config.inc from the same directory.
+include('./conf/hacollector.conf'); // will load the config.inc from the same directory.
 
 // Implemnent file locking. We don't want this script to run more than once.
 // Note - the Lockfile has a name composed of the script-name and the haproxy
@@ -23,7 +23,7 @@ if (flock($fp, LOCK_EX)) {
 }
 
 // Load the haproxy version file - configuration for what to poll and type definitions.
-include_once("./conf/haproxy_" . $haproxy_version . ".inc"); // will load haproxy file
+include("./conf/haproxy_" . $haproxy_version . ".inc"); // will load haproxy file
 
 // Showing current config
 print "\n";
@@ -47,6 +47,36 @@ print " => Executing! \n";
 print "    - Debug flag: $DEBUG \n";
 print "    - Statistics flag: $STATS \n";
 print " => Lockfile $filename created.\n";
+
+
+// The URL is always an issue. Make sure it is currect.
+function check_url($text, $return_var, $description){
+       
+    // define the answer array and empty it
+    $answer = array();
+    $answer['error_msg'] = '';
+    
+    // URL needs to be valid, not 0
+    if (strlen($text) > 0) {
+        if (preg_match("/^http/i",$text)) {
+            if (filter_var($text, FILTER_VALIDATE_URL)  === FALSE) {
+                $answer["$return_var"] = htmlentities($text, ENT_QUOTES, 'UTF-8');
+                $answer['error_msg'] = "*** FATAL: URL format for $description \"" . $answer["$return_var"] . "\" invalid!";
+            } else {
+                $answer["$return_var"] = htmlentities($text, ENT_QUOTES, 'UTF-8');
+            }
+        }           
+    } else {
+        // If Data was empty - it won't hurt here either
+        $answer["$return_var"] = "";
+        $answer['error_msg'] = "*** FATAL: Valid URL for $description required!";
+    }
+
+    // Return what we found out.
+    return($answer);
+
+} // function check_url
+
 
 // tick use required
 declare(ticks = 1);
@@ -72,6 +102,13 @@ function sig_handler($signo) {
         }
         exit;
         break;
+    case SIGUSR1:
+        print "Received $signo - Rereading configuration!\n";
+        // Load configuration
+        include('./conf/hacollector.conf'); // will load the config.inc from the same directory.
+        // Load the haproxy version file - configuration for what to poll and type definitions.
+        include("./conf/haproxy_" . $haproxy_version . ".inc"); // will load haproxy file
+        // handle restart tasks
     default:
         // handle all other signals
         print "Received $signo - don't know what to do!";
@@ -81,8 +118,44 @@ function sig_handler($signo) {
 
 // Actual function, doing the HAProxy polling etc.
 function poller() {
-    global $haproxy_version, $haproxy_port, $DEBUG, $username, $password, $csvurl, $self_signed, $apmia_url, $apmia_port, $poll_time, $apmia_send, $apmia_des, $apmia_type, $send_all, $STATS;
-   
+    global $haproxy_version, $haproxy_port, $DEBUG, $username, $password, $csvurl, $self_signed, $apmia_url, $apmia_port, $poll_time, $apmia_send, $apmia_des, $apmia_type, $send_all, $STATS, $filename;
+
+    // Checking the provided URL for HAPRoxy
+    $url_check = check_url($csvurl, "clean", "HAProxy");
+    if (strlen($url_check['error_msg']) > 1) {
+        // we have an issue here. Error message should not exist.
+        print "{$url_check['error_msg']} - ";
+        unlink($filename);
+        posix_kill(posix_getpid(), SIGTERM);
+    }
+
+    // Checking the provided for APMIA
+    $url_check = check_url($apmia_url, "clean", "APMIA");
+    if (strlen($url_check['error_msg']) > 1) {
+        // we have an issue here. Error message should not exist.
+        print "{$url_check['error_msg']} - ";
+        unlink($filename);
+        posix_kill(posix_getpid(), SIGTERM);
+    }
+
+    // Check port for apmia
+    if (($haproxy_port < 65536) && ($haproxy_port > 0)) {
+            $port['check'] = "valid";
+        } else {
+            print "*** FATAL: Port $haproxy_port for APMIA invalid. - ";
+            unlink($filename);
+            posix_kill(posix_getpid(), SIGTERM);
+        }
+
+    // Check port for apmia
+    if (($apmia_port < 65536) && ($apmia_port > 0)) {
+            $port['check'] = "valid";
+        } else {
+            print "*** FATAL: Port $apmia_port for APMIA invalid. - ";
+            unlink($filename);
+            posix_kill(posix_getpid(), SIGTERM);
+        }
+    
     // Init ch
     $ch = curl_init($csvurl);
 
@@ -205,6 +278,7 @@ while (true) {
     // setup signal handlers - or else we cannot interrupt.
     pcntl_signal(SIGTERM, "sig_handler");
     pcntl_signal(SIGINT,  "sig_handler");
+    pcntl_signal(SIGUSR1,  "sig_handler");
     // Pause for the requested amount of time
     sleep($poll_time);
 } // while loop main function
