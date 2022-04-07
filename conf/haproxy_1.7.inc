@@ -202,7 +202,7 @@ $apmia_type = array("pxname =" => "String",
                    "bck" => "|Server:Backup servers", // number of backup servers (backend), server is backup (server)
                    "chkfail" => "|Server:Failed server check", // number of failed checks. (Only counts checks failed when the server is up.)
                    "chkdown" => "|Server:Up-Down transitions", // number of UP->DOWN transitions.
-                   "lastchg" => "|Server:Seconds since last Up-Dowm transition", // number of seconds since the last UP<->DOWN transition
+                   "lastchg" => "|Server:Seconds since last Up-Down transition", // number of seconds since the last UP<->DOWN transition
                    "downtime" => "|Server:Total downtime", // total downtime (in seconds).
                    "qlimit" => "|Queue:Configure queue limit", // configured maxqueue for the server, or nothing in the value is 0
                    "pid" => "|Server:Instance ID", // process id (0 for first instance, 1 for second, ...)
