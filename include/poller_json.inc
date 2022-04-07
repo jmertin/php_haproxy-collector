@@ -115,7 +115,7 @@ function poller_json() {
             $nature = $entries['tags']['nature'];
             $entryname = $entries['field']['name'];
             if (isset($apmia_send["$entryname"]) && ($apmia_send["$entryname"] == "false")) {
-                $send=false;
+                $send = false;
                 $DEBUG && print " ** Skipping line: $entryname \n";
             }
 
@@ -143,6 +143,15 @@ function poller_json() {
                 }
                 break;
             }
+
+            // Sanitize data somehow
+            if ($send_all) {
+                if ($metricvalue == "") {$metricvalue = 0; }
+            }
+
+            if (!(strlen($metricvalue) > 0)) {
+                $send = false;
+            }
             
             if ($send) {
                 $newline = "{\"type\" : \"" . $metrictype . "\", " . 
@@ -150,6 +159,7 @@ function poller_json() {
                          "\"value\" : \"$metricvalue\"}";
                 $line .= "{$coma}{$newline}";
                 $coma = ",";
+                
             } // If send
             
         } // values foreach loop
