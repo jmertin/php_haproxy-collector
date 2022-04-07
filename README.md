@@ -1,4 +1,4 @@
-# php_haproxy-collector 1.0-5 by J. Mertin -- joerg.mertin@broadcom.com
+# php_haproxy-collector 1.0-6 by J. Mertin -- joerg.mertin@broadcom.com
 Purpose: Collects haproxy csv stats and sends them to restfull enabled APMIA 
 
 # Description
@@ -27,7 +27,7 @@ around 14MBytes of real memory (measured using smem/PSS value).
 The detailed documentation for the APMIA can be found under 
 [Enable the EPAgent Plug-ins RESTful Interface](https://techdocs.broadcom.com/us/en/ca-enterprise-software/it-operations-management/application-performance-management/10-7/implementing-agents/infrastructure-agent/epagent-plug-ins/configure-epagent-network-ports/enable-the-epagent-plug-ins-restful-interface.html)
 
-#### Enable the REST interface on your Infrastructure Agent.
+#### Enable the REST interface on your Infrastructure Agent
 
 - Navigate to the [Agent_Home]/core/config directory and open the IntroscopeAgent.profile in a text editor.   
 Look for:
@@ -39,11 +39,22 @@ and set the port to whatever port is available. The collector will send the rece
 
 ### HAProxy
 
-Docs are located here:   
-- [Management Guide 1.7](http://cbonte.github.io/haproxy-dconv/1.7/management.html#9.1)   
-- [Management Guide 1.5](http://cbonte.github.io/haproxy-dconv/1.5/snapshot/configuration.html#9.1)   
+the current version of haproxy_collector supports haproxy collecting
+statistics in csv format for the old legacy versions.
 
-Note currently only haproxy 1.5 and 1.7 are supported.   
+For haproxy 2.x and newer, the poller can use the haproxy json
+statistics feed. Note however that some statistics are missing
+description fields. This will result in the displayed statistics to
+use cryptic names (as provided by haproxy.
+
+
+Docs are located here:   
+- [Management Guide 2.5](http://cbonte.github.io/haproxy-dconv/2.5/management.html#9.1) - json poller
+- [Management Guide 1.7](http://cbonte.github.io/haproxy-dconv/1.7/management.html#9.1) - csv poller  
+- [Management Guide 1.5](http://cbonte.github.io/haproxy-dconv/1.5/snapshot/configuration.html#9.1) - csv poller  
+
+
+Note currently only haproxy 1.5 and 1.7 are supported through the csv poller.   
 Though new versions can be added easily through adapting the existing
 conf/haproxy_1.7.inc file for example.
 
@@ -66,9 +77,10 @@ listen stats
 The following variables need to be defined:
 
 - hapver: default "1.7" - defines which haproxy version the system will poll. This defines the metrics to collect.
+Only required for haproxy versions < 2.
 
 - hapurl: Format "https://haproxy-url.domain.tld/haproxy_stats;csv" - No default.   
-Note the ";csv" at the end is required. Also, do **not** add the port for the stats-UI into the URL!
+Note the ";csv or ;json" at the end is required. Also, do **not** add the port for the stats-UI into the URL!
 
 - hapuser: default "admin" - The user that is used to authenticate to access the statistics
 

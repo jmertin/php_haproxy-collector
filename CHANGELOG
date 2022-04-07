@@ -1,3 +1,15 @@
+2022-04-07 ade9768 Joerg Mertin Updated image to take into account changed directory structure.
+2022-04-07 e6aeaac Joerg Mertin Added support to send all values if they exist, even if empty.
+2022-04-07 d6d6498 Joerg Mertin Added some more description.
+2022-04-07 555b56e Joerg Mertin changed variable name.
+2022-04-07 54a43f1 Joerg Mertin Moved most generic functions here.
+2022-04-07 6e39490 Joerg Mertin json poller configuration file.
+2022-04-07 1bfdeef Joerg Mertin new poller function to take into account new json statistics API from haproxy - as no detailed information on csv data is available.
+2022-04-07 e6403e2 Joerg Mertin Moved csv poller code in here.
+2022-04-07 553e585 Joerg Mertin "exported" poller functions to respectively poller_csv and poller_json
+2022-04-07 d8a44d8 Joerg Mertin Fixed typo
+2022-04-07 397d261 Joerg Mertin Fixed typo
+2022-03-29 5971e0e Joerg Mertin Updated docs
 2022-03-29 bfc3ba5 Joerg Mertin Removed caveat. Wrong configuration caused it.
 2022-03-29 874acae Joerg Mertin Documentation updates
 2022-03-29 a6513dd Joerg Mertin Updated documentation
