@@ -75,6 +75,26 @@ function endsWith( $haystack, $needle ) {
     return substr( $haystack, -$length ) === $needle;
 }
 
+function send_metrics($tosend, $workon) {
+    global $apmia_port, $apmia_url, $DEBUG, $STATS;
+        $xch = curl_init( $apmia_url );
+        curl_setopt($xch, CURLOPT_PORT , $apmia_port);
+        // prep data to send to APMIA
+        curl_setopt( $xch, CURLOPT_POSTFIELDS, $tosend );
+        curl_setopt( $xch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
+        curl_setopt( $xch, CURLOPT_RETURNTRANSFER, true );
+        $result = curl_exec($xch);
+        
+        //Check for errors.
+        if (curl_errno($xch)) {
+            // If an error occured, throw an Exception.
+            throw new Exception(curl_error($xch));
+        }
+        $DEBUG && print "$result \n";
+        $STATS && print " > Polled: " . gmstrftime("%Y-%m-%d %T %Z") . " {$workon} Agent answer: $result \n";
+        // print "\n\n $tosend\n\n"; // Payload in case
+        curl_close($xch);
 
+} // function send_metrics
 
 ?>
