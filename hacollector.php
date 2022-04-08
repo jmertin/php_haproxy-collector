@@ -31,8 +31,11 @@ print "\n";
 print "*** HAProxy stats to APMIA RESTFul collector started\n";
 print " => The following configuration is set (conf/hacollector.conf)\n";
 print " =============================================================\n";
-
-print " => HA Proxy version: $haproxy_version \n";
+if (endsWith("$pollurl", 'csv')) {
+    print " => HA Proxy version: $haproxy_version \n";
+} else {
+    print " => HA Proxy version: Ignored (json poller used) \n";
+}
 print "    - haproxy URL: $pollurl \n";
 print "    - haproxy port: $haproxy_port \n";
 if (strlen($username) > 0) {
