@@ -8,10 +8,10 @@ services:
     #entrypoint: "/bin/sleep 600" # For troubleshooting, entrypoint override
     environment:
       # HAProxy access/location configuration
-      - hapver=1.7
+      - hapver=2.5
       - hapuser=admin
       - happass=xxxxxxx
-      - hapurl=https://[haproxy-server.domain.tld]/haproxy_stats;csv
+      - hapurl=https://[haproxy-server.domain.tld]/haproxy_stats;json
       - happort=2000
       - self_signed=true # If certificate is self-signed.
       - send_all=
