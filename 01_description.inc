@@ -262,7 +262,7 @@ bcp/php_haproxy-collector                                     latest            
 
 ### Fine tuning the json poller
 
-The json-poller fine tuning can be done in the file _conf/haproxy_json.conf_
+The json-poller fine tuning can be done in the file _conf/haproxy_json.conf_    
 Only 2 arrays are of importance.   
 
 - apmia_send: This array is used to tell the poller which metrics
@@ -278,10 +278,10 @@ Only 2 arrays are of importance.
 "qcur" => ":Current queued requests"
 ```   
 Note that in case you want to group several entries under the same
-metric group, add the group name to the description:
+metric group, add the group name to the description:   
 ```
 "qcur" => "|Queue:Current queued requests"
-```
+```   
 In this example, the data will show up under:   
 ```
 SuperDomain|APMIAHostname|Infrastructure|Agent|haproxy|appname|appname_backend|Process|Queue:Current queued requests
