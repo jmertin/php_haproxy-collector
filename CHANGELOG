@@ -1,3 +1,5 @@
+2022-04-08 6a96c2f Joerg Mertin Added fine tuning documentation for the csv poller, and how to add a new supported haproxy versio
+2022-04-08 afbaa6d Joerg Mertin Doc updated.
 2022-04-08 20c93c4 Joerg Mertin Formatting fixes to documentation.
 2022-04-08 db9e112 Joerg Mertin Updated docs
 2022-04-08 b0dd852 Joerg Mertin Exported metric send to function send_metrics
