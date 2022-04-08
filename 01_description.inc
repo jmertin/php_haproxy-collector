@@ -53,9 +53,10 @@ HAproxy Docs are located here:
 
 - [Management Guide 2.5](http://cbonte.github.io/haproxy-dconv/2.5/management.html#9.1) - json poller
 - [Management Guide 1.7](http://cbonte.github.io/haproxy-dconv/1.7/management.html#9.1) - csv poller  
+- [Management Guide 1.8](https://cbonte.github.io/haproxy-dconv/1.8/management.html#9.1) - csv poller
 - [Management Guide 1.5](http://cbonte.github.io/haproxy-dconv/1.5/snapshot/configuration.html#9.1) - csv poller  
 
-Note currently only haproxy 1.5 and 1.7 are supported through the csv poller.   
+Note currently only haproxy 1.5, 1.7  and 1.8 are supported through the csv poller.   
 Though new versions can be added easily through adapting the existing
 **conf/haproxy_1.7.inc** file for example. See the **Adding a new haproxy version** section.
 
