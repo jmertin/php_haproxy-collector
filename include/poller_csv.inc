@@ -141,23 +141,10 @@ function poller_csv() {
 
         //$DEBUG && print " 5 => Returne Data JSon : \n" . $tosend . "\n\n";
         
-        $xch = curl_init( $apmia_url );
-        curl_setopt($xch, CURLOPT_PORT , $apmia_port);
-        // prep data to send to APMIA
-        curl_setopt( $xch, CURLOPT_POSTFIELDS, $tosend );
-        curl_setopt( $xch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
-        curl_setopt( $xch, CURLOPT_RETURNTRANSFER, true );
-        $result = curl_exec($xch);
-
-        //Check for errors.
-        if (curl_errno($xch)) {
-            // If an error occured, throw an Exception.
-            throw new Exception(curl_error($xch));
+        if (!$DEBUG) {
+            send_metrics($tosend, "{$output['pxname']}|{$output['svname']}");
         }
-        $DEBUG && print "$result \n";
-        $STATS && print " > Polled: " . gmstrftime("%Y-%m-%d %T %Z") . " {$output['pxname']}|{$output['svname']} Agent answer: $result \n";
-        // print "\n\n $tosend\n\n"; // Payload in case
-        curl_close($xch);
+
     } // foreach loop #2
 } // poller_csv function
 
