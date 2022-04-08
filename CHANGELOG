@@ -1,3 +1,5 @@
+2022-04-08 65ee211 Joerg Mertin Error correction of docs
+2022-04-08 a84ed45 Joerg Mertin  Removed user names in paths
 2022-04-08 36d6fff Joerg Mertin removed all names
 2022-04-08 260ddbd Joerg Mertin Updated csvpoller documentation
 2022-04-08 6a96c2f Joerg Mertin Added fine tuning documentation for the csv poller, and how to add a new supported haproxy versio

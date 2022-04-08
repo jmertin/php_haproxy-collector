@@ -23,9 +23,9 @@ requires the configuration to be "adapted" for each new version.
 
 ### Requirements
 
-- The restfull interface of the APMIA needs to be enabled
+- The RESTful interface of the APMIA needs to be enabled
 - HAProxy needs to provide the statistics
-- PHP 7.4 needs to have posix, pcntl, curl installed (extensions)
+- PHP 7.2+ needs to have posix, pcntl, curl installed (extensions)
 
 ## APMIA configuration
 
@@ -34,38 +34,40 @@ The detailed documentation for the APMIA Restful API and usage can be found unde
 
 #### Enable the REST interface on your Infrastructure Agent
 
-- Navigate to the [Agent_Home]/core/config directory and open the IntroscopeAgent.profile in a text editor.   
+- Navigate to the [Agent_Home]/core/config directory and open the **IntroscopeAgent.profile** in a text editor.   
 Look for:
 ```
 introscope.epagent.config.httpServerPort=8080
 ```
-and set the port to whatever port is available. The collector will send the received metrics to this port.
+and set the port to whatever port is available. The haproxy collector will send the received metrics to this port.
 
 
 ### HAProxy
 
-the current version of haproxy_collector supports haproxy collecting
-statistics in csv format for the old legacy versions.
+the current version of haproxy_collector supports collecting
+statistics in csv format for the old legacy versions (1.x).
 
-For haproxy 2.x and newer, the poller can use the haproxy json
+For haproxy 2.x and newer, the poller can use the json
 statistics feed. Note however that some statistics are missing
 description fields. This will result in the displayed statistics to
-use cryptic names (as provided by haproxy.
+use cryptic names (as provided by haproxy). You can fix this by completing the description array (See section **Fine-tuning the json poller**)
 
 
-Docs are located here:
+HAproxy Docs are located here:
 
 - [Management Guide 2.5](http://cbonte.github.io/haproxy-dconv/2.5/management.html#9.1) - json poller
 - [Management Guide 1.7](http://cbonte.github.io/haproxy-dconv/1.7/management.html#9.1) - csv poller  
 - [Management Guide 1.5](http://cbonte.github.io/haproxy-dconv/1.5/snapshot/configuration.html#9.1) - csv poller  
 
-
 Note currently only haproxy 1.5 and 1.7 are supported through the csv poller.   
 Though new versions can be added easily through adapting the existing
-conf/haproxy_1.7.inc file for example.
+**conf/haproxy_1.7.inc** file for example. See the **Adding a new haproxy version** section.
+
+
 
 Configure the haproxy to provide server statistics.
 An example configuration could look like below:
+
 ```
 # Statistics
 listen stats
@@ -77,60 +79,75 @@ listen stats
     stats uri /haproxy_stats
     stats auth admin:XXXXXX
 ```
-Note that haproxy preovides basic authentication which sends a header
-with base64 encoded login/password pair as a header variable. So in
-case you use a password, make sure to enable https (even self signed
+Note that haproxy provides basic authentication which sends a header
+with a base64 encoded login/password pair as a header variable.    
+In case you use a password, for security make sure to enable https (even a self signed
 key will do).
 
 
 ### Configuration variables
 
-The following variables need to be defined:
+The following variables need to be defined in the launcher script or docker-compose.yml file.
 
-- hapver: default "1.7" - defines which haproxy version the system
+- **hapver**: default "1.7" - defines which haproxy version the system
 will poll. This defines the metrics to collect. It is required for the
 csv poller!  Only required for haproxy versions < 2.
-
-- hapurl: Format "https://haproxy-url.domain.tld/haproxy_stats;csv" -
+- **hapurl**: Format "https://haproxy-url.domain.tld/haproxy_stats;csv" -
 No default.   _Note the ";csv or ;json" at the end is required. Also,
 do **not** add the port for the stats-UI into the URL!_
-
-- hapuser: default "admin" - The user that is used to authenticate to
+- **hapuser**: default "admin" - The user that is used to authenticate to
   access the statistics
-
-- happass: No default. The associated password to hapuser!
-
-- happort: default "2000" - the port to access the haproxy statistics.
-
-- self_signed: default "false" - If the certificate to access the
+- **happass**: No default. The associated password to hapuser!
+- **happort**: default "2000" - the port to access the haproxy statistics.
+- **self_signed**: default "false" - If the certificate to access the
   haproxy interface is self signed, set this variable to "true".
-
-- send_all: default "false" - By default the collector will only send
+- **send_all**: default "false" - By default the collector will only send
   metrics that have values associated. If the value fields are empty,
   the metric will be skipped.
-
-- apmia_url: No default - "http://apmia-url.domain.tld/apm/metricFeed"
+- **apmia_url**: No default - "http://apmia-url.domain.tld/apm/metricFeed"
   the url used to access the APMIA restful collector.
-
-- apmia_port: default 8080 - The port the restful collector is
+- **apmia_port**: default 8080 - The port the restful collector is
   listening.
-
-- poll_time: 7 - The interval between sending the stats. Note that the
+- **poll_time**: 7 - The interval between sending the stats. Note that the
   counter will start once all the data was sent so take into account
   long poll-times on larg hapreoxy deployments!
-
-- hapdebug: default "false" - Set to true for activating debugging
-
-- hapstats: default "false" - Set to true for activating stats in
+- **hapdebug**: default "false" - Set to true for activating debugging
+- **hapstats**: default "false" - Set to true for activating stats in
   console
+
+The **run.sh** file would look like this:
+```
+#!/bin/bash
+#
+# These entries can be used on docker-variables!
+export hapver=1.7
+export hapuser="admin"
+export happass="xxxxxxxx"
+export hapurl="https://haproxy-url.domain.tld/haproxy_stats;csv"
+export happort=2000
+export self_signed=true
+export send_all=
+
+export hapdebug= # Set to true for activating debugging
+export hapstats= # Set to true for activating stats in console
+
+export apmia_url="http://apmia-url.domain.tld/apm/metricFeed"
+export apmia_port=8080
+export poll_time=7
+
+
+# Run actual script.
+php ./hacollector.php
+```
 
 ## Running the CLI Version only
 
-The CLI version can be run from any location.
+The CLI version can be run from any location given PHP-CLI 7.2+ is installed.
 Just edit the run.sh script, provide the correct values, and execute it.
 Below an example using the json poller.
+
 ```
-php_haproxy_collector$ ./run-dev.sh
+php_haproxy_collector$ ./run.sh
 
 *** HAProxy stats to APMIA RESTFul collector started
  => The following configuration is set (conf/hacollector.conf)
@@ -164,7 +181,7 @@ The docker version can be run as simple as the console version.
 
 The provided image is based on alpine to keep the storage footprint
 small. Also, for security reasons, the entire process runs as user
-hapcoll that is created during image build.
+**hapcoll** that is created during image build.
 
 Fill the variables accordingly in the provided docker-compose.yml
 template and start the container with:
@@ -204,12 +221,13 @@ haproxy_collector |  => Lockfile /opt/hapcoll/hacollector.php.39a80fac..LCK crea
 ### Building the docker image
 
 This git-package provides a complete build-set so you can create your
-own docker-image. Simply execute the ./build_image.sh script.
+own docker-image. Simply execute the **./build_image.sh** script.
 
-If the "DOCKER_REGISTRY" variable in 00_infosource.cfg is holding a
+If the "DOCKER_REGISTRY" variable in **00_infosource.cfg** is holding a
 valid docker repository, it will also automatically push the created
 image to the docker repository. Make sure you adapt the docker-compose
 script so that it polls the image from that repository!
+
 ```
 php_haproxy_collector$ ./build_image.sh 
 
@@ -266,7 +284,7 @@ bcp/php_haproxy-collector                                     latest            
 
 ### Fine tuning the json poller
 
-The json-poller fine tuning can be done in the file _conf/haproxy_json.conf_    
+The json-poller fine tuning can be done in the file **conf/haproxy_json.conf**    
 Only 2 arrays are of importance.   
 
 #### apmia_send:
@@ -274,22 +292,23 @@ Only 2 arrays are of importance.
 This array is used to tell the poller which metrics
   names not to send to APMIA. pxname and svname as provided by haproxy
   will be integrated into the metric path, hence not sent.
-  They can take either "true" or "false" as value. By default, or if
-  an entry does not exist, it assumes the "true" value.
+  They can take either "**true**" or "**false**" as value. By default, or if
+  an entry does not exist, it assumes the "**true**" value.
 
 #### apmia_descr:
 
 By default, haproxy sends short cryptic names as
   identifiers. For example: **qcur => current queued requests**.
-  To have just qcur translated, assign the array value:   
+  To have  **qcur** translated, assign the array value:   
+
 ```
 "qcur" => ":Current queued requests"
-```   
+```
 Note that in case you want to group several entries under the same
 metric group, add the group name to the description:   
 ```
 "qcur" => "|Queue:Current queued requests"
-```   
+```
 In this example, the data will show up under:   
 ```
 SuperDomain|APMIAHostname|Infrastructure|Agent|haproxy|appname|appname_backend|Process|Queue:Current queued requests
@@ -301,25 +320,24 @@ The fine tuning part is done through 2 array definitions.
 
 #### apmia_send:
 
-This array is used to tell the poller which metrics
-  names not to send to APMIA. pxname and svname as provided by haproxy
-  will be integrated into the metric path, hence not sent.
-  They can take either "true" or "false" as value. By default, or if
-  an entry does not exist, it assumes the "true" value.
+This array is used to tell the poller which metrics names not to send to APMIA. **pxname** and **svname** as provided by haproxy will be integrated into the metric path, hence not sent.   
+They can take either "**true**" or "**false**" as value. By default, or if an entry does not exist, it assumes the "**true**" value.
 
 #### apmia_descr:
 
-By default, haproxy sends short cryptic names as
-  identifiers. For example: **qcur => current queued requests**.
-  To have just qcur translated, assign the array value:   
+By default, haproxy sends short cryptic names as identifiers.   
+
+For example: **qcur => current queued requests**.
+  To have just **qcur** translated, assign the array value:   
+
 ```
 "qcur" => ":Current queued requests"
-```   
+```
 Note that in case you want to group several entries under the same
 metric group, add the group name to the description:   
 ```
 "qcur" => "|Queue:Current queued requests"
-```   
+```
 In this example, the data will show up under:   
 ```
 SuperDomain|APMIAHostname|Infrastructure|Agent|haproxy|appname|appname_backend|Process|Queue:Current queued requests
@@ -330,12 +348,13 @@ SuperDomain|APMIAHostname|Infrastructure|Agent|haproxy|appname|appname_backend|P
 
 Adding a new HAPRoxy version to be supported through the csv poller, is straight forward.
 
-1. Find the CSV file definition. Best is to look up the "Management Guide [Version]" - and find the CSV section.   
+1. Find the CSV file definition. Best is to look up the "**Management Guide [Version]**" - and find the CSV section.   
 For example for HAPRoxy 1.7 it would be [Management Guide version 1.7.14](http://cbonte.github.io/haproxy-dconv/1.7/management.html#9.1).
 2. Copy one HAPRoxy definition file **conf/haproxy_1.5.inc** to the wanted version - in this case ->  HAPRoxy 1.7 it would be **conf/haproxy_1.7.inc**
 3. There are 3 arrays that need to be adapted: apmia_send, apmia_des and apmia_type
 In these 3 arrays, the missing field names and associated values need to be completed compared to the values found in the online Management Guide.   
    
+
 You may want to make a diff between haproxy_1.5.inc and haproxy_1.7.inc to see what needs to be done.
 
 
