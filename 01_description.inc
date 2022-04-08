@@ -165,10 +165,10 @@ hapcoll that is created during image build.
 Fill the variables accordingly in the provided docker-compose.yml
 template and start the container with:
 ```
-jmertin@calypso:~/docker/php_haproxy_collector$ docker-compose up -d
+php_haproxy_collector$ docker-compose up -d
 Creating network "php_haproxy_collector_default" with the default driver
 Creating haproxy_collector ... done
-jmertin@calypso:~/docker/php_haproxy_collector$ docker-compose logs
+php_haproxy_collector$ docker-compose logs
 Attaching to haproxy_collector
 haproxy_collector | 
 haproxy_collector | *** HAProxy stats to APMIA RESTFul collector started
