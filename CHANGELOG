@@ -1,3 +1,5 @@
+2022-04-08 20c93c4 Joerg Mertin Formatting fixes to documentation.
+2022-04-08 db9e112 Joerg Mertin Updated docs
 2022-04-08 b0dd852 Joerg Mertin Exported metric send to function send_metrics
 2022-04-08 fdaa85b Joerg Mertin Simplified the poller a lot.
 2022-04-08 40417ab Joerg Mertin Exported send-metrics function to  send the metrics to the APMIA
