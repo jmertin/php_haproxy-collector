@@ -265,13 +265,17 @@ bcp/php_haproxy-collector                                     latest            
 The json-poller fine tuning can be done in the file _conf/haproxy_json.conf_    
 Only 2 arrays are of importance.   
 
-- apmia_send: This array is used to tell the poller which metrics
+#### apmia_send:
+
+This array is used to tell the poller which metrics
   names not to send to APMIA. pxname and svname as provided by haproxy
   will be integrated into the metric path, hence not sent.
   They can take either "true" or "false" as value. By default, or if
   an entry does not exist, it assumes the "true" value.
 
-- apmia_descr: By default, haproxy sends short cryptic names as
+#### apmia_descr:
+
+By default, haproxy sends short cryptic names as
   identifiers. For example: **qcur => current queued requests**.
   To have just qcur translated, assign the array value:   
 ```
@@ -286,3 +290,46 @@ In this example, the data will show up under:
 ```
 SuperDomain|APMIAHostname|Infrastructure|Agent|haproxy|appname|appname_backend|Process|Queue:Current queued requests
 ```
+
+### Fine tuning the csv poller, and adding new HAProxy releases
+
+The fine tuning part is done through 2 array definitions.
+
+#### apmia_send:
+
+This array is used to tell the poller which metrics
+  names not to send to APMIA. pxname and svname as provided by haproxy
+  will be integrated into the metric path, hence not sent.
+  They can take either "true" or "false" as value. By default, or if
+  an entry does not exist, it assumes the "true" value.
+
+#### apmia_descr:
+
+By default, haproxy sends short cryptic names as
+  identifiers. For example: **qcur => current queued requests**.
+  To have just qcur translated, assign the array value:   
+```
+"qcur" => ":Current queued requests"
+```   
+Note that in case you want to group several entries under the same
+metric group, add the group name to the description:   
+```
+"qcur" => "|Queue:Current queued requests"
+```   
+In this example, the data will show up under:   
+```
+SuperDomain|APMIAHostname|Infrastructure|Agent|haproxy|appname|appname_backend|Process|Queue:Current queued requests
+```
+
+
+#### Adding a new haproxy version
+
+Adding a new HAPRoxy version to be supported through the csv poller, is straight forward.
+
+1. Find the CSV file definition. Best is to look up the "Management Guide [Version]" - and find the CSV section.   
+For example for HAPRoxy 1.7 it would be [Management Guide version 1.7.14](http://cbonte.github.io/haproxy-dconv/1.7/management.html#9.1).
+2. Copy one HAPRoxy definition file **conf/haproxy_1.5.inc** to the wanted version - in this case ->  HAPRoxy 1.7 it would be **conf/haproxy_1.7.inc**
+3. There are 3 arrays that need to be adapted: apmia_send, apmia_des and apmia_type
+In these 3 arrays, the missing field names and associated values need to be completed compared to the values found in the online Management Guide.   
+   
+You may want to make a diff between haproxy_1.5.inc and haproxy_1.7.inc to see what needs to be done.
