@@ -1,3 +1,12 @@
+2022-04-08 cd343af Joerg Mertin Bumped template docker-compose to use json.
+2022-04-08 eb0635e Joerg Mertin New haproxy 1.8 support
+2022-04-08 10a420b Joerg Mertin Made poller more modular
+2022-04-08 95273d9 Joerg Mertin Made poller more modular.
+2022-04-08 d5b50cb Joerg Mertin Added mention of 1.8 support
+2022-04-08 762f877 Joerg Mertin MAde sure imported booleans remain booleans.
+2022-04-08 d4f009a Joerg Mertin Moved send_stats function out of main poller.
+2022-04-08 13522f0 Joerg Mertin Added support page.
+2022-04-08 5217bb2 Joerg Mertin Error correction on docs
 2022-04-08 65ee211 Joerg Mertin Error correction of docs
 2022-04-08 a84ed45 Joerg Mertin  Removed user names in paths
 2022-04-08 36d6fff Joerg Mertin removed all names
