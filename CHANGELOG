@@ -1,3 +1,10 @@
+2022-04-08 b0dd852 Joerg Mertin Exported metric send to function send_metrics
+2022-04-08 fdaa85b Joerg Mertin Simplified the poller a lot.
+2022-04-08 40417ab Joerg Mertin Exported send-metrics function to  send the metrics to the APMIA
+2022-04-08 0d454c9 Joerg Mertin Updated version display... None for json poller.
+2022-04-08 679ffbb Joerg Mertin Optimized configuration file (array location). Removed what was not used.
+2022-04-08 2f62965 Joerg Mertin Updated documentation to include json poller and fine tuning for json poller.
+2022-04-07 9a0273d Joerg Mertin Added json statistics for haproxy (future format). First release.
 2022-04-07 ade9768 Joerg Mertin Updated image to take into account changed directory structure.
 2022-04-07 e6aeaac Joerg Mertin Added support to send all values if they exist, even if empty.
 2022-04-07 d6d6498 Joerg Mertin Added some more description.
