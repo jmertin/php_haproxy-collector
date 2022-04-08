@@ -2,7 +2,7 @@
 
 // Actual function, doing the HAProxy polling when downloadin json data
 function poller_json() {
-    global $haproxy_type, $haproxy_nature, $haproxy_origin, $haproxy_port, $DEBUG, $username, $password, $pollurl, $self_signed, $apmia_url, $apmia_port, $poll_time, $apmia_send, $apmia_des, $apmia_type, $send_all, $STATS, $filename, $apmia_desc;
+    global $haproxy_type, $haproxy_nature, $haproxy_port, $DEBUG, $username, $password, $pollurl, $self_signed, $apmia_url, $apmia_port, $poll_time, $apmia_send, $apmia_des, $apmia_type, $send_all, $STATS, $filename, $apmia_desc;
 
     // Checking the provided URL for HAPRoxy
     $url_check = check_url($pollurl, "clean", "HAProxy");
@@ -82,52 +82,58 @@ function poller_json() {
     $assoc_array = array();
     
     $newline = "";
-    $fieldobject = "";
+    $svname = "";
     foreach ($json_array as $entryid => $values) {
         $line = "";
         $coma = "";
         $DEBUG && print "=============================================================\n";
-        $DEBUG && print "Entry ID: $entryid \n"; 
-        $DEBUG && print_r($values["$entryid"]);
-        $DEBUG && print "objType: " . $values["$entryid"]['objType'] . "\n";
-        $DEBUG && print "Fieldname: " . $values["$entryid"]['field']['name'] . "\n";
-        $objtype = $values["$entryid"]['objType'];
-        $fieldname = $values["$entryid"]['field']['name'];
-        $workon = $objtype . " " . $values["$entryid"]['value']['value'];
-        if ($values["$entryid"]['field']['name'] == "svname") {
-            $fieldobject = $values["$entryid"]['value']['value'] . "|";
-        }
+       
+        // Loop through the rest.
         foreach ($values as $dataid => $entries) {
             $send = true;
-            /*
-            print " => Data ID: $dataid - Printing entries array\n";
-            print_r($entries);
-            print " => objType: " . $entries['objType'] . "\n";
-            print " => Fieldname: " . $entries['field']['name'] . "\n";
-            print " => Tag Origine: " . $entries['tags']['origin'] . "\n";
-            print " => Tag Nature: " . $entries['tags']['nature'] . "\n";
-            print " => Value type: " . $entries['value']['type'] . "\n";
-            print " => Value: " . $entries['value']['value'] . "\n";
-            print "\n ";
-            */
+            
+            // Extract the svname and pxname to compute the metric path "prefix"
+            switch ($entries['field']['name']) {
+            case "svname":
+                $svname = $entries['value']['value'];
+                break;
+            case "pxname":
+                $pxname = $entries['value']['value'];
+                break;
+            }
+
+            // Once we have both, we have the path
+            if ((strlen($svname) > 0) && (strlen($pxname) > 0)) {
+                $metricheader = "{$svname}|{$pxname}";
+                $DEBUG && print " => processing: $metricheader \n";
+            }
+            
+            $DEBUG && print " => Data ID: $dataid \n";           
+            
             // Define if we want to send the data
             $type = $entries['value']['type'];
             $nature = $entries['tags']['nature'];
             $entryname = $entries['field']['name'];
+            
             if (isset($apmia_send["$entryname"]) && ($apmia_send["$entryname"] == "false")) {
                 $send = false;
-                $DEBUG && print " ** Skipping line: $entryname \n";
+                $DEBUG && print " ** Skipping line: \"$entryname\" as requested by configuration \n";
             }
 
+            // We can define the "description" of the entry name in
+            // the haproxy_json.conf file.
+            // If a definition is there, use it. Else - make it usable.
             if (isset($apmia_desc["$entryname"])) {
                 $descentryname = $apmia_desc["$entryname"];
             } else {
                 $descentryname = ":" . $entryname;
             }
-            $objtype = $entries['objType'];
-            $metricvalue = $entries['value']['value'];
-            $metricscope = $entries['tags']['scope'];
+            $DEBUG && print " >> Entry description: $descentryname \n";
 
+            $metricscope = $entries['tags']['scope'];
+            $DEBUG && print " >> Metric scope: $metricscope \n";
+
+            // Compute data type.
             switch ($haproxy_nature["$nature"]) {
             case 'StringEvent':
                 $metrictype = "StringEvent";
@@ -143,19 +149,25 @@ function poller_json() {
                 }
                 break;
             }
+            $DEBUG && print " >> Metric type: $metrictype \n";
 
+            $metricvalue = $entries['value']['value'];
+            $DEBUG && print " >> Metric value: $metricvalue \n";
+            
             // Sanitize data somehow
             if ($send_all) {
                 if ($metricvalue == "") {$metricvalue = 0; }
+                $DEBUG && print " >> INFO: Metric value manually set to 0 \n";
             }
 
             if (!(strlen($metricvalue) > 0)) {
                 $send = false;
+                $DEBUG && print " >> INFO: Entry skipped due to non existing data \n";
             }
             
             if ($send) {
                 $newline = "{\"type\" : \"" . $metrictype . "\", " . 
-                         "\"name\" : \"haproxy|$fieldobject{$objtype}|{$metricscope}{$descentryname}\", " . 
+                         "\"name\" : \"haproxy|{$metricheader}|{$metricscope}{$descentryname}\", " . 
                          "\"value\" : \"$metricvalue\"}";
                 $line .= "{$coma}{$newline}";
                 $coma = ",";
@@ -169,23 +181,9 @@ function poller_json() {
         $DEBUG && print " => $tosend \n";
         $coma = "";
 
-        $xch = curl_init( $apmia_url );
-        curl_setopt($xch, CURLOPT_PORT , $apmia_port);
-        // prep data to send to APMIA
-        curl_setopt( $xch, CURLOPT_POSTFIELDS, $tosend );
-        curl_setopt( $xch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
-        curl_setopt( $xch, CURLOPT_RETURNTRANSFER, true );
-        $result = curl_exec($xch);
-        
-        //Check for errors.
-        if (curl_errno($xch)) {
-            // If an error occured, throw an Exception.
-            throw new Exception(curl_error($xch));
+        if (!$DEBUG) {
+            send_metrics($tosend, $metricheader);
         }
-        $DEBUG && print "$result \n";
-        $STATS && print " > Polled: " . gmstrftime("%Y-%m-%d %T %Z") . " {$workon} Agent answer: $result \n";
-        // print "\n\n $tosend\n\n"; // Payload in case
-        curl_close($xch);
         
     } // entries foreach loop
 
