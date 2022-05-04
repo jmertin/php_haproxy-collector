@@ -1,3 +1,4 @@
+2022-04-11 ff9ce95 Joerg Mertin Updated documentation. Added layout explaining how the php haproxy collector works.
 2022-04-08 57c6f5c Joerg Mertin Adapted docs to current status
 2022-04-08 cd343af Joerg Mertin Bumped template docker-compose to use json.
 2022-04-08 eb0635e Joerg Mertin New haproxy 1.8 support
